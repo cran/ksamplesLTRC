@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>k-Sample tests for left-truncated and right-censored survival data</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">k-Sample tests for left-truncated and
+right-censored survival data</h1>
+
+
+
+<div id="quick-example" class="section level1">
+<h1>Quick example</h1>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>ltrc.data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>  <span class="fu">ltrc.sim</span>(<span class="at">n =</span> <span class="dv">500</span>, <span class="at">rtrunc =</span> rnorm, <span class="at">trunc.args =</span> <span class="fu">list</span>(<span class="dv">4</span>, <span class="dv">1</span>),</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>           <span class="at">rtarget =</span> rnorm, <span class="at">target.args =</span> <span class="fu">list</span>(<span class="dv">4</span>, <span class="dv">1</span>),</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>           <span class="at">rcens =</span> rexp, <span class="at">cens.args =</span> <span class="fu">list</span>(<span class="dv">1</span>), <span class="at">seed =</span> <span class="dv">1212</span>),</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>  <span class="at">group =</span> <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, <span class="at">each =</span> <span class="dv">250</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a>)</span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>test <span class="ot">&lt;-</span> <span class="fu">ltrc.test</span>(ltrc.data, <span class="at">tests =</span> <span class="st">&quot;ks&quot;</span>, <span class="at">weights =</span> <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">/</span><span class="dv">2</span>, <span class="dv">2</span>), <span class="at">B =</span> <span class="dv">200</span>, <span class="at">plot.curves =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>test<span class="sc">$</span>statistic</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="co">#&gt; $ks</span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="co">#&gt; [1] 3.557636</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>test<span class="sc">$</span>p.value</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="co">#&gt; $ks</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="co">#&gt; [1] 0.1940299</span></span></code></pre></div>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>This package implements tests for the <span class="math inline">\(k\)</span>-sample problem under left truncation
+and/or right censoring. It provides</p>
+<ul>
+<li>Omnibus tests for the <span class="math inline">\(k\)</span>-sample
+problem for data of that type.</li>
+<li>Classical and weighted log-rank-type tests.</li>
+<li>Maximum likelihood estimators of the survival (and distribution)
+functions.</li>
+<li>Simulation tools for left-truncated and/or right-censored data.</li>
+</ul>
+<p>In this vignette, we focus on the case of left-truncated and
+right-censored (LTRC) data. The functions for only left truncation or
+only right censoring follow the same structure and are not shown
+separately.</p>
+<p>The methodology implemented here is described in detail in Lago, de
+Uña-Alvarez and Pardo-Fernandez (2025) and Lago, Pardo-Fernandez and de
+Uña-Alvarez (2026); see DESCRIPTION for the full references.</p>
+</div>
+<div id="notation-and-data-structure" class="section level1">
+<h1>Notation and data structure</h1>
+<p>The package uses the following variables:</p>
+<ul>
+<li><code>entry</code>: truncation time <span class="math inline">\(U\)</span></li>
+<li><code>time</code>: observed time <span class="math inline">\(Y =
+\min(X, C)\)</span></li>
+<li><code>status</code>: event indicator <span class="math inline">\(\Delta\)</span></li>
+<li><code>group</code>: group label</li>
+</ul>
+<p>Data must be provided as a data frame (or matrix) with these columns,
+in this order. Functions that take a single combined data frame (such as
+<code>ltrc.test</code>) identify columns by position rather than by
+name; the output of <code>ltrc.sim</code> follows the same convention
+but labels the event indicator column <code>delta</code> rather than
+<code>status</code> — both refer to the same quantity <span class="math inline">\(\Delta\)</span>.</p>
+</div>
+<div id="simulating-ltrc-data" class="section level1">
+<h1>Simulating LTRC data</h1>
+<p>The user only needs to specify the sample size of the simulated
+sample and the distributions of the truncation, target, and censoring
+variables through the corresponding standard R generators
+(<code>rnorm</code>, <code>rweibull</code>, <code>runif</code>, etc.),
+along with their parameters supplied as a list. The only requirement is
+that the truncation, target, and censoring variables be strictly
+positive.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>ltrc.data <span class="ot">&lt;-</span> ksamplesLTRC<span class="sc">::</span><span class="fu">ltrc.sim</span>(<span class="at">n =</span> <span class="dv">500</span>, <span class="at">rtrunc =</span> rnorm, <span class="at">trunc.args =</span> <span class="fu">list</span>(<span class="dv">4</span>, <span class="dv">1</span>),</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>                 <span class="at">rtarget =</span> rnorm, <span class="at">target.args =</span> <span class="fu">list</span>(<span class="dv">4</span>, <span class="dv">1</span>),</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>                 <span class="at">rcens =</span> rexp, <span class="at">cens.args =</span> <span class="fu">list</span>(<span class="dv">1</span>), <span class="at">seed =</span> <span class="dv">12</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="fu">head</span>(ltrc.data)</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt;          u        y delta</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co">#&gt; 1 3.043256 3.714960     0</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co">#&gt; 2 3.079995 4.490035     1</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co">#&gt; 3 2.002358 2.500780     0</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co">#&gt; 4 3.893536 4.713094     0</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co">#&gt; 5 4.428015 4.504474     0</span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co">#&gt; 6 3.222280 3.475242     0</span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="fu">mean</span>(ltrc.data[, <span class="dv">1</span>] <span class="sc">&lt;=</span> ltrc.data[, <span class="dv">2</span>])</span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="co">#&gt; [1] 1</span></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="fu">table</span>(ltrc.data<span class="sc">$</span>delta)</span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="co">#&gt;   0   1 </span></span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="co">#&gt; 291 209</span></span></code></pre></div>
+</div>
+<div id="estimating-the-survival-function" class="section level1">
+<h1>Estimating the survival function</h1>
+<p>Despite testing being the main goal of this package, we also include
+the estimators used internally by the testing procedures.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>ltrc.data <span class="ot">&lt;-</span> ksamplesLTRC<span class="sc">::</span><span class="fu">ltrc.sim</span>(<span class="dv">1000</span>, rnorm, <span class="at">trunc.args =</span> <span class="fu">list</span>(<span class="dv">4</span>, <span class="dv">1</span>),</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>                                     rnorm, <span class="at">target.args =</span> <span class="fu">list</span>(<span class="dv">4</span>, <span class="dv">1</span>),</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>                                     rexp, <span class="at">cens.args =</span> <span class="fu">list</span>(<span class="dv">1</span>))</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>est <span class="ot">&lt;-</span> <span class="fu">ltrc.estimator</span>(<span class="at">o.sample =</span> ltrc.data, <span class="at">conf.int =</span> <span class="cn">TRUE</span>, <span class="at">conf.type =</span> <span class="st">&#39;loglog&#39;</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="fu">plot</span>(est, <span class="at">col =</span> <span class="st">&#39;forestgreen&#39;</span>, <span class="at">xlab =</span> <span class="st">&#39;t&#39;</span>, <span class="at">ylab =</span> <span class="st">&#39;Estimated survival probability&#39;</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="fu">curve</span>(<span class="dv">1</span> <span class="sc">-</span> <span class="fu">pnorm</span>(x, <span class="dv">4</span>, <span class="dv">1</span>), <span class="at">add =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">str</span>(est)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="co">#&gt; List of 6</span></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="co">#&gt;  $ fail.time    : num [1:428] 2.04 2.24 2.34 2.44 2.51 ...</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co">#&gt;  $ estimation   : num [1:428] 0.969 0.948 0.933 0.919 0.908 ...</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co">#&gt;  $ prob         : num [1:428] 0.0312 0.0211 0.0146 0.0137 0.0111 ...</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="co">#&gt;  $ conf.limits  : num [1:428, 1:2] 0.798 0.803 0.799 0.79 0.783 ...</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co">#&gt;   ..- attr(*, &quot;dimnames&quot;)=List of 2</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : NULL</span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr [1:2] &quot;var.i.l&quot; &quot;var.i.u&quot;</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co">#&gt;  $ conf.limits.F: num [1:428, 1:2] 0.00446 0.01305 0.02109 0.02956 0.0371 ...</span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="co">#&gt;   ..- attr(*, &quot;dimnames&quot;)=List of 2</span></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : NULL</span></span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr [1:2] &quot;varF.l&quot; &quot;varF.u&quot;</span></span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a><span class="co">#&gt;  $ hole         : NULL</span></span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a><span class="co">#&gt;  - attr(*, &quot;class&quot;)= chr &quot;estimators&quot;</span></span></code></pre></div>
+<ol style="list-style-type: decimal">
+<li><code>$fail.time</code>: the ordered, distinct observed event
+times</li>
+<li><code>$estimation</code>: the estimated survival probability at each
+observed event time</li>
+<li><code>$prob</code>: the jumps of the estimator at each observed
+event time</li>
+<li><code>$conf.limits</code>: the lower and upper values of the
+confidence band for the survival function</li>
+<li><code>$conf.limits.F</code>: the same limits for the distribution
+function</li>
+</ol>
+</div>
+<div id="handling-holes" class="section level1">
+<h1>Handling holes</h1>
+<p>The functions of this package also contain an input to deal with
+holes when data are subject to left truncation (with or without
+censoring). Holes are event times with a unitary risk set, which would
+make the Lynden-Bell-type estimator degenerate. There are three
+possibilities:</p>
+<ul>
+<li><code>&quot;holes&quot;</code> (default): no correction; a warning is
+issued.</li>
+<li><code>&quot;add&quot;</code>: increases the risk set by 1 at the hole.</li>
+<li><code>&quot;conditional&quot;</code>: discards observations and conditions the
+sample on event times larger than the largest hole.</li>
+</ul>
+<p>For illustration, we use the well-known Channing House dataset. This
+dataset presents a hole at time <span class="math inline">\(t =
+781\)</span> in the male group. Below is the resulting estimated
+survival function when <code>holes = &#39;holes&#39;</code> (red),
+<code>holes = &#39;add&#39;</code> (green), and
+<code>holes = &#39;conditional&#39;</code> (blue).</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;channing&quot;</span>, <span class="at">package =</span> <span class="st">&quot;KMsurv&quot;</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>o.sample <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">entry =</span> channing<span class="sc">$</span>ageentry, <span class="at">time =</span> channing<span class="sc">$</span>age,</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>                        <span class="at">status =</span> channing<span class="sc">$</span>death, <span class="at">group =</span> channing<span class="sc">$</span>gender)</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>o.sample <span class="ot">&lt;-</span> <span class="fu">subset</span>(o.sample, group <span class="sc">==</span> <span class="dv">1</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="fu">head</span>(o.sample)</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="co">#&gt;     entry time status group</span></span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="co">#&gt; 366   782  909      1     1</span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="co">#&gt; 367  1020 1128      1     1</span></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="co">#&gt; 368   856  969      1     1</span></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="co">#&gt; 369   915  957      1     1</span></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a><span class="co">#&gt; 370   863  983      1     1</span></span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="co">#&gt; 371   906 1012      1     1</span></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="fu">plot</span>(ksamplesLTRC<span class="sc">::</span><span class="fu">ltrc.estimator</span>(o.sample, <span class="at">holes =</span> <span class="st">&#39;holes&#39;</span>), <span class="at">col =</span> <span class="dv">2</span>,</span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">&#39;t&#39;</span>, <span class="at">ylab =</span> <span class="st">&#39;Estimated survival probability&#39;</span>)</span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a><span class="fu">lines</span>(ksamplesLTRC<span class="sc">::</span><span class="fu">ltrc.estimator</span>(o.sample, <span class="at">holes =</span> <span class="st">&#39;add&#39;</span>), <span class="at">col =</span> <span class="dv">3</span>)</span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a><span class="fu">lines</span>(ksamplesLTRC<span class="sc">::</span><span class="fu">ltrc.estimator</span>(o.sample, <span class="at">holes =</span> <span class="st">&#39;conditional&#39;</span>), <span class="at">col =</span> <span class="dv">4</span>)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAqAAAAHgCAMAAABNUi8GAAAAUVBMVEUAAAAAADoAAGYAOpAAZrYil+Y6AAA6ADo6AGY6kNth0E9mAABmADpmtv+QOgCQ2/+2ZgC2/7a2///bkDrb///fU2v/tmb/25D//7b//9v////Pmr7mAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAQIElEQVR4nO3di3KjOBqGYXriTnfWHYdpMvhw/xe6FuBDYgtjiR99oPepmt2uGsqod9+SQWAoDoCwIvUAgD4ECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkECmkjB1oAg9gEut+0n/7P31E+DtmyCbQq3to/1Kc/RH0c8mUS6H5zzrJ6+Yz+OGTMJNDd+v30x9rzJU+gGIQZFNKsjkG7KZRjUMQxOovfrduzeM/8SaAYyCjQqT8OS0WgkGYdaMVZPGJMPIM+fwULeeMrHtIIFNIIFNIIFNKMrsVfToY4i0cMmxl0v/HeCBrycciX2Q3LqzE/DtmyOgati/fef0+gGISTJEgjUEgjUEgj0C9+OqkHgSsEeoNAlRDoDQJVQqA3CFQJgd4gUCUEeoNAlRDoDQJVQqA3CFQJgd4gUCUEeoNAlRDoDQJVQqA3fv7kgqcOAvUgUA0E6kGgGgjUg0A1EKgHgWogUA8C1UCgHgSqgUA9CFQDgXoQqAYC9SBQDQTq8dMn9cAyQ6BPItBpEeiTCHRaBPokAp0WgT6JQKf1fKC7te/1hib7VUOg0wqZQauiiG6UQDFI4Fd8dKPzDZRCJxV8DFr5nz8/6n7lEOikwgKtj3W+H/Yb78uMx9uvHAKdVECg7h0ebZl1+BRKoBgk5Cz+x8eE+5VDoJMKCPRP22fE9PnMfuUQ6KTCA/W9aHvk/coh0Ek9G2h5eYdc3zLTcbPVftOcSkXu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" /><!-- --></p>
+<p>When data are subject to left truncation or right censoring only, the
+matrix or data frame must contain only two columns: truncation and event
+times in the former case, and event times and censoring indicators in
+the latter. The survival function estimator for left-truncated data also
+offers the hole-handling options described above; the
+right-censored-only estimator does not, since that phenomenon does not
+occur in that framework.</p>
+</div>
+<div id="k-sample-tests" class="section level1">
+<h1><span class="math inline">\(k\)</span>-sample tests</h1>
+<p>We aim to test whether the <span class="math inline">\(k\)</span>
+target variables follow the same distribution across the <span class="math inline">\(k\)</span> populations or not. The tests are based
+on comparing each group-specific estimator <span class="math inline">\(F_{n_j}\)</span> against a pooled estimator</p>
+<p><span class="math display">\[
+F_n(t) = \sum_{j=1}^k \varphi_j F_{n_j}(t),
+\]</span></p>
+<p>where <span class="math inline">\(\varphi_1,\dots,\varphi_k\)</span>
+are user-specified weights satisfying <span class="math inline">\(\varphi_j &gt; 0\)</span> and <span class="math inline">\(\sum_{j=1}^k \varphi_j = 1\)</span>.</p>
+<p>There are two options, as the user may perform the tests with either
+of the two main functions of this package.</p>
+<ol style="list-style-type: decimal">
+<li><p>The user may perform the tests via <code>ltrc.test</code>.
+Columns must appear in this order: <code>entry</code>,
+<code>time</code>, <code>status</code>, <code>group</code>. This
+function requires the weights <span class="math inline">\(w_1,\dots,w_k\)</span> used in <span class="math inline">\(F_n\)</span> above, supplied as a vector with
+strictly positive components summing to 1. The user also chooses one or
+more of <code>tests = c(&quot;ks&quot;, &quot;cvm&quot;, &quot;logrank&quot;)</code>. If
+<code>ks</code> and/or <code>cvm</code> are requested, the bootstrap
+p-value is approximated using <code>B</code> replications (default
+<code>B = 500</code>); this argument need not be set explicitly unless a
+different number of replications is desired. Weighted log-rank-type
+(Fleming and Harrington) tests are also available: the choice <span class="math inline">\(p = 0 = q\)</span> returns the classical log-rank
+test, while other choices of <span class="math inline">\(p\)</span> and
+<span class="math inline">\(q\)</span> (scalars or vectors) assign more
+weight to discrepancies in early, mid, or late event times. This
+function also supports the <code>holes</code> argument described
+above.</p>
+<p>When <code>holes = &#39;conditional&#39;</code> is used with more than one
+group, all <span class="math inline">\(k\)</span> groups are conditioned
+jointly on event times larger than the largest hole found across all
+<span class="math inline">\(k\)</span> samples, and not on each group’s
+own largest hole. This guarantees that the KS and CvM statistics are
+computed on a common, hole-free time window across groups; conditioning
+each group separately would compare estimators defined on different
+supports.</p></li>
+</ol>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;channing&quot;</span>, <span class="at">package =</span> <span class="st">&quot;KMsurv&quot;</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>data.channing <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">entry =</span> channing<span class="sc">$</span>ageentry, <span class="at">time =</span> channing<span class="sc">$</span>age,</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>                             <span class="at">status =</span> channing<span class="sc">$</span>death, <span class="at">group =</span> channing<span class="sc">$</span>gender)</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>aa <span class="ot">&lt;-</span> ksamplesLTRC<span class="sc">::</span><span class="fu">ltrc.test</span>(data.channing, <span class="at">weights =</span> <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">/</span><span class="dv">2</span>, <span class="dv">2</span>), <span class="at">holes =</span> <span class="st">&#39;conditional&#39;</span>,</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>                               <span class="at">tests =</span> <span class="fu">c</span>(<span class="st">&#39;ks&#39;</span>, <span class="st">&#39;cvm&#39;</span>, <span class="st">&#39;logrank&#39;</span>), <span class="at">plot.curves =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>                               <span class="at">p =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="fl">0.5</span>, <span class="dv">0</span>), <span class="at">q =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="fl">0.5</span>, <span class="dv">1</span>)) <span class="co"># equal weights for two groups</span></span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>aa<span class="sc">$</span>p.value</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="co">#&gt; $ks</span></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="co">#&gt; [1] 0.5708583</span></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="co">#&gt; $cvm</span></span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a><span class="co">#&gt; [1] 0.6047904</span></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>aa<span class="sc">$</span>logrank</span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a><span class="co">#&gt;              statistic    p.value</span></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a><span class="co">#&gt; p=0, q=0      2.285075 0.13062379</span></span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a><span class="co">#&gt; p=1, q=0      2.814105 0.09343901</span></span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a><span class="co">#&gt; p=0.5, q=0.5  1.890058 0.16919541</span></span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a><span class="co">#&gt; p=0, q=1      1.177968 0.27776998</span></span></code></pre></div>
+<ol start="2" style="list-style-type: decimal">
+<li>The user may perform the tests via <code>ksample.test</code>. This
+function differs from <code>ltrc.test</code> in only one aspect: instead
+of passing a single matrix or data frame, the user passes
+<code>time</code>, <code>entry</code> (when applicable),
+<code>status</code> (when applicable), and <code>group</code> as
+separate vectors. The function detects which type of data
+(left-truncated, right-censored, or both) the user has, and performs the
+tests accordingly. The same global-conditioning behavior under
+<code>holes = &#39;conditional&#39;</code> applies here.</li>
+</ol>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;channing&quot;</span>, <span class="at">package =</span> <span class="st">&quot;KMsurv&quot;</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>bb <span class="ot">&lt;-</span> ksamplesLTRC<span class="sc">::</span><span class="fu">ksample.test</span>(<span class="at">time =</span> channing<span class="sc">$</span>age, <span class="at">entry =</span> channing<span class="sc">$</span>ageentry,</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>                                  <span class="at">status =</span> channing<span class="sc">$</span>death, <span class="at">group =</span> channing<span class="sc">$</span>gender,</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>                                  <span class="at">weights =</span> <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">/</span><span class="dv">2</span>, <span class="dv">2</span>), <span class="at">B =</span> <span class="dv">500</span>, <span class="at">holes =</span> <span class="st">&#39;conditional&#39;</span>,</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>                                  <span class="at">tests =</span> <span class="fu">c</span>(<span class="st">&#39;ks&#39;</span>, <span class="st">&#39;cvm&#39;</span>, <span class="st">&#39;logrank&#39;</span>), <span class="at">plot.curves =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>                                  <span class="at">p =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="fl">0.5</span>, <span class="dv">0</span>), <span class="at">q =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="fl">0.5</span>, <span class="dv">1</span>)) <span class="co"># equal weights for two groups</span></span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>bb<span class="sc">$</span>p.value</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="co">#&gt; $ks</span></span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="co">#&gt; [1] 0.5988024</span></span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a><span class="co">#&gt; $cvm</span></span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a><span class="co">#&gt; [1] 0.6347305</span></span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>bb<span class="sc">$</span>logrank</span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a><span class="co">#&gt;              statistic    p.value</span></span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a><span class="co">#&gt; p=0, q=0      2.285075 0.13062379</span></span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a><span class="co">#&gt; p=1, q=0      2.814105 0.09343901</span></span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a><span class="co">#&gt; p=0.5, q=0.5  1.890058 0.16919541</span></span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a><span class="co">#&gt; p=0, q=1      1.177968 0.27776998</span></span></code></pre></div>
+<div id="single-test-shortcuts" class="section level2">
+<h2>Single-test shortcuts</h2>
+<p>If only the KS or only the CvM test is of interest,
+<code>ltrc.pv.ks</code> and <code>ltrc.pv.cvm</code> compute the
+statistic and its bootstrap p-value directly, without running the other
+tests:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>ksamplesLTRC<span class="sc">::</span><span class="fu">ltrc.pv.ks</span>(data.channing, <span class="at">weights =</span> <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">/</span><span class="dv">2</span>, <span class="dv">2</span>), <span class="at">B =</span> <span class="dv">200</span>, <span class="at">holes =</span> <span class="st">&#39;conditional&#39;</span>)<span class="sc">$</span>pvalue</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a><span class="co">#&gt; [1] 0.5870647</span></span></code></pre></div>
+<p>These are equivalent to calling <code>ltrc.test</code> with
+<code>tests = &quot;ks&quot;</code> (respectively <code>&quot;cvm&quot;</code>), and are
+provided for convenience when the other tests are not needed.</p>
+</div>
+</div>
+<div id="left-truncation-and-right-censoring-special-cases" class="section level1">
+<h1>Left truncation and right censoring special cases</h1>
+<p>Although the discussion above focused on left-truncated and
+right-censored data, the package includes functions for only
+left-truncated or only right-censored data. The structure of the inputs
+is the same in all three cases, except for the trivial fact that holes
+do not arise under right censoring. The functions follow the same naming
+convention as those for LTRC data, with different prefixes: for
+instance, <code>ltrc.estimator</code> returns the MLE of the survival
+function under left truncation and right censoring,
+<code>lt.estimator</code> returns the analogous estimator under left
+truncation only, and <code>rc.estimator</code> does so for
+right-censored-only data. The same convention applies to the testing and
+simulation functions.</p>
+</div>
+<div id="practical-recommendations" class="section level1">
+<h1>Practical recommendations</h1>
+<p>Following the results in the literature, we recommend the
+following:</p>
+<ol style="list-style-type: decimal">
+<li>Use the log-rank test when the proportional hazards assumption is
+guaranteed to hold.</li>
+<li>Use weighted log-rank tests when looking for discrepancies in
+specific parts of the support of the target variables.</li>
+<li>Use Kolmogorov-Smirnov and Cramér-von Mises tests when no
+information is available about the alternative hypothesis.</li>
+</ol>
+</div>
+<div id="summary" class="section level1">
+<h1>Summary</h1>
+<p>This package provides tools for testing equality of survival
+distributions under left truncation and/or right censoring, including
+log-rank, weighted log-rank, and omnibus (Kolmogorov–Smirnov and
+Cramér–von Mises) tests.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

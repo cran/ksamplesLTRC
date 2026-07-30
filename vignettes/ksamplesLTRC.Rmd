@@ -1,0 +1,181 @@
+---
+title: "k-Sample tests for left-truncated and right-censored survival data"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{K-sample tests for left-truncated and right-censored survival data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library(KMsurv)
+library(ksamplesLTRC)
+```
+
+# Quick example
+
+```{r quick-example, fig.width=7, fig.height=5}
+ltrc.data <- data.frame(
+  ltrc.sim(n = 500, rtrunc = rnorm, trunc.args = list(4, 1),
+           rtarget = rnorm, target.args = list(4, 1),
+           rcens = rexp, cens.args = list(1), seed = 1212),
+  group = rep(1:2, each = 250)
+)
+
+test <- ltrc.test(ltrc.data, tests = "ks", weights = rep(1/2, 2), B = 200, plot.curves = TRUE)
+test$statistic
+test$p.value
+```
+
+# Introduction
+
+This package implements tests for the $k$-sample problem under left truncation and/or right censoring. It provides
+
+- Omnibus tests for the $k$-sample problem for data of that type.
+- Classical and weighted log-rank-type tests.
+- Maximum likelihood estimators of the survival (and distribution) functions.
+- Simulation tools for left-truncated and/or right-censored data.
+
+In this vignette, we focus on the case of left-truncated and right-censored (LTRC) data. The functions for only left truncation or only right censoring follow the same structure and are not shown separately.
+
+The methodology implemented here is described in detail in Lago, de Uña-Alvarez and Pardo-Fernandez (2025) and Lago, Pardo-Fernandez and de Uña-Alvarez (2026); see DESCRIPTION for the full references.
+
+# Notation and data structure
+
+The package uses the following variables:
+
+- `entry`: truncation time $U$
+- `time`: observed time $Y = \min(X, C)$
+- `status`: event indicator $\Delta$
+- `group`: group label
+
+Data must be provided as a data frame (or matrix) with these columns, in this order. Functions that take a single combined data frame (such as `ltrc.test`) identify columns by position rather than by name; the output of `ltrc.sim` follows the same convention but labels the event indicator column `delta` rather than `status` — both refer to the same quantity $\Delta$.
+
+# Simulating LTRC data
+
+The user only needs to specify the sample size of the simulated sample and the distributions of the truncation, target, and censoring variables through the corresponding standard R generators (`rnorm`, `rweibull`, `runif`, etc.), along with their parameters supplied as a list. The only requirement is that the truncation, target, and censoring variables be strictly positive.
+
+```{r simulation}
+ltrc.data <- ksamplesLTRC::ltrc.sim(n = 500, rtrunc = rnorm, trunc.args = list(4, 1),
+                 rtarget = rnorm, target.args = list(4, 1),
+                 rcens = rexp, cens.args = list(1), seed = 12)
+head(ltrc.data)
+mean(ltrc.data[, 1] <= ltrc.data[, 2])
+table(ltrc.data$delta)
+```
+
+# Estimating the survival function
+
+Despite testing being the main goal of this package, we also include the estimators used internally by the testing procedures.
+
+```{r estimation, fig.width=7, fig.height=5}
+ltrc.data <- ksamplesLTRC::ltrc.sim(1000, rnorm, trunc.args = list(4, 1),
+                                     rnorm, target.args = list(4, 1),
+                                     rexp, cens.args = list(1))
+
+est <- ltrc.estimator(o.sample = ltrc.data, conf.int = TRUE, conf.type = 'loglog')
+plot(est, col = 'forestgreen', xlab = 't', ylab = 'Estimated survival probability')
+curve(1 - pnorm(x, 4, 1), add = TRUE)
+str(est)
+```
+
+1. `$fail.time`: the ordered, distinct observed event times
+2. `$estimation`: the estimated survival probability at each observed event time
+3. `$prob`: the jumps of the estimator at each observed event time
+4. `$conf.limits`: the lower and upper values of the confidence band for the survival function
+5. `$conf.limits.F`: the same limits for the distribution function
+
+# Handling holes
+
+The functions of this package also contain an input to deal with holes when data are subject to left truncation (with or without censoring). Holes are event times with a unitary risk set, which would make the Lynden-Bell-type estimator degenerate. There are three possibilities:
+
+- `"holes"` (default): no correction; a warning is issued.
+- `"add"`: increases the risk set by 1 at the hole.
+- `"conditional"`: discards observations and conditions the sample on event times larger than the largest hole.
+
+For illustration, we use the well-known Channing House dataset. This dataset presents a hole at time $t = 781$ in the male group. Below is the resulting estimated survival function when `holes = 'holes'` (red), `holes = 'add'` (green), and `holes = 'conditional'` (blue).
+
+```{r holes, fig.width=7, fig.height=5}
+data("channing", package = "KMsurv")
+o.sample <- data.frame(entry = channing$ageentry, time = channing$age,
+                        status = channing$death, group = channing$gender)
+
+o.sample <- subset(o.sample, group == 1)
+head(o.sample)
+plot(ksamplesLTRC::ltrc.estimator(o.sample, holes = 'holes'), col = 2,
+     xlab = 't', ylab = 'Estimated survival probability')
+lines(ksamplesLTRC::ltrc.estimator(o.sample, holes = 'add'), col = 3)
+lines(ksamplesLTRC::ltrc.estimator(o.sample, holes = 'conditional'), col = 4)
+```
+
+When data are subject to left truncation or right censoring only, the matrix or data frame must contain only two columns: truncation and event times in the former case, and event times and censoring indicators in the latter. The survival function estimator for left-truncated data also offers the hole-handling options described above; the right-censored-only estimator does not, since that phenomenon does not occur in that framework.
+
+# $k$-sample tests
+
+We aim to test whether the $k$ target variables follow the same distribution across the $k$ populations or not. The tests are based on comparing each group-specific estimator $F_{n_j}$ against a pooled estimator
+
+$$
+F_n(t) = \sum_{j=1}^k \varphi_j F_{n_j}(t),
+$$
+
+where $\varphi_1,\dots,\varphi_k$ are user-specified weights satisfying $\varphi_j > 0$ and $\sum_{j=1}^k \varphi_j = 1$.
+
+There are two options, as the user may perform the tests with either of the two main functions of this package.
+
+1. The user may perform the tests via `ltrc.test`. Columns must appear in this order: `entry`, `time`, `status`, `group`. This function requires the weights $w_1,\dots,w_k$ used in $F_n$ above, supplied as a vector with strictly positive components summing to 1. The user also chooses one or more of `tests = c("ks", "cvm", "logrank")`. If `ks` and/or `cvm` are requested, the bootstrap p-value is approximated using `B` replications (default `B = 500`); this argument need not be set explicitly unless a different number of replications is desired. Weighted log-rank-type (Fleming and Harrington) tests are also available: the choice $p = 0 = q$ returns the classical log-rank test, while other choices of $p$ and $q$ (scalars or vectors) assign more weight to discrepancies in early, mid, or late event times. This function also supports the `holes` argument described above.
+
+    When `holes = 'conditional'` is used with more than one group, all $k$ groups are conditioned jointly on event times larger than the largest hole found across all $k$ samples, and not on each group's own largest hole. This guarantees that the KS and CvM statistics are computed on a common, hole-free time window across groups; conditioning each group separately would compare estimators defined on different supports.
+
+```{r channing-ltrc-test, fig.width=7, fig.height=5}
+data("channing", package = "KMsurv")
+data.channing <- data.frame(entry = channing$ageentry, time = channing$age,
+                             status = channing$death, group = channing$gender)
+aa <- ksamplesLTRC::ltrc.test(data.channing, weights = rep(1/2, 2), holes = 'conditional',
+                               tests = c('ks', 'cvm', 'logrank'), plot.curves = TRUE,
+                               p = c(0, 1, 0.5, 0), q = c(0, 0, 0.5, 1)) # equal weights for two groups
+aa$p.value
+aa$logrank
+```
+
+2. The user may perform the tests via `ksample.test`. This function differs from `ltrc.test` in only one aspect: instead of passing a single matrix or data frame, the user passes `time`, `entry` (when applicable), `status` (when applicable), and `group` as separate vectors. The function detects which type of data (left-truncated, right-censored, or both) the user has, and performs the tests accordingly. The same global-conditioning behavior under `holes = 'conditional'` applies here.
+
+```{r channing-ksample-test, fig.width=7, fig.height=5}
+data("channing", package = "KMsurv")
+bb <- ksamplesLTRC::ksample.test(time = channing$age, entry = channing$ageentry,
+                                  status = channing$death, group = channing$gender,
+                                  weights = rep(1/2, 2), B = 500, holes = 'conditional',
+                                  tests = c('ks', 'cvm', 'logrank'), plot.curves = TRUE,
+                                  p = c(0, 1, 0.5, 0), q = c(0, 0, 0.5, 1)) # equal weights for two groups
+bb$p.value
+bb$logrank
+```
+
+## Single-test shortcuts
+
+If only the KS or only the CvM test is of interest, `ltrc.pv.ks` and `ltrc.pv.cvm` compute the statistic and its bootstrap p-value directly, without running the other tests:
+
+```{r single-test-shortcut}
+ksamplesLTRC::ltrc.pv.ks(data.channing, weights = rep(1/2, 2), B = 200, holes = 'conditional')$pvalue
+```
+
+These are equivalent to calling `ltrc.test` with `tests = "ks"` (respectively `"cvm"`), and are provided for convenience when the other tests are not needed.
+
+# Left truncation and right censoring special cases
+
+Although the discussion above focused on left-truncated and right-censored data, the package includes functions for only left-truncated or only right-censored data. The structure of the inputs is the same in all three cases, except for the trivial fact that holes do not arise under right censoring. The functions follow the same naming convention as those for LTRC data, with different prefixes: for instance, `ltrc.estimator` returns the MLE of the survival function under left truncation and right censoring, `lt.estimator` returns the analogous estimator under left truncation only, and `rc.estimator` does so for right-censored-only data. The same convention applies to the testing and simulation functions.
+
+# Practical recommendations
+
+Following the results in the literature, we recommend the following:
+
+1. Use the log-rank test when the proportional hazards assumption is guaranteed to hold.
+2. Use weighted log-rank tests when looking for discrepancies in specific parts of the support of the target variables.
+3. Use Kolmogorov-Smirnov and Cramér-von Mises tests when no information is available about the alternative hypothesis.
+
+# Summary
+
+This package provides tools for testing equality of survival distributions under left truncation and/or right censoring, including log-rank, weighted log-rank, and omnibus (Kolmogorov--Smirnov and Cramér--von Mises) tests.
