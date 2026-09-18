@@ -123,7 +123,7 @@ lt.cvm <- function(p.sample, weights = NULL,
     est.i <- est.list[[i]]
 
     if (length(est.i$fail.time) > 0L) {
-      idx <- findInterval(nodes, est.i$fail.time, rightmost.closed = TRUE)
+      idx <- findInterval(nodes, est.i$fail.time)
       E[i, ] <- c(1, est.i$estimation)[idx + 1L]
     }
   }

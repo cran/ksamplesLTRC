@@ -63,7 +63,6 @@ ksample.test <- function(
     keep.boot = FALSE
 ) {
 
-  ## Match arguments
   tests <- match.arg(
     tests,
     choices = c("ks", "cvm", "logrank"),
@@ -130,14 +129,6 @@ ksample.test <- function(
 
     if (any(entry > time))
       stop("All observations must satisfy 'entry <= time'")
-  }
-
-  if (length(B) != 1L ||
-      is.na(B) ||
-      !is.finite(B) ||
-      B < 1L ||
-      B != floor(B)) {
-    stop("'B' must be a positive integer")
   }
 
   B <- as.integer(B)

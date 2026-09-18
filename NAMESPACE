@@ -33,9 +33,13 @@ export(rc.pv.cvm)
 export(rc.pv.ks)
 export(rc.sim)
 export(rc.test)
-importFrom(graphics,legend)
-importFrom(graphics,lines)
-importFrom(graphics,matplot)
-importFrom(stats,pchisq)
-importFrom(stats,qnorm)
+importFrom(graphics,
+  legend,
+  lines,
+  matplot
+)
+importFrom(stats,
+  pchisq,
+  qnorm
+)
 importFrom(utils,head)

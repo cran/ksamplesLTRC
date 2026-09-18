@@ -61,7 +61,7 @@ lt.truncation.estimator <- function(o.sample,
   o.sample2 <- data.frame(u2=-o.sample[,2],x2=-o.sample[,1])
   est2 <- lt.estimator(o.sample2, conf.int=FALSE, holes=holes)
   trunc.time <- -est2$fail.time
-  estimation <- 1-est2$estimation
+  estimation <- c(1, est2$estimation)[seq_along(est2$estimation)]
 
   est <- lt.estimator(o.sample,conf.int=FALSE,holes=holes)
 
@@ -75,7 +75,7 @@ lt.truncation.estimator <- function(o.sample,
     trunc.time  = trunc.time,
     estimation  = estimation,
     prob        = est2$prob,
-    gamma       = gamma.est
+    gamma.hat       = gamma.est
   )
   class(lista) <- "t.estimators"
   return(lista)
